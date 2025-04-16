@@ -40,7 +40,7 @@ index_with_keywords = faiss.IndexFlatL2(dimension)
 index_no_keywords = faiss.IndexFlatL2(dimension)
 index_with_keywords.add(embeddings_with_keywords_np)
 index_no_keywords.add(embeddings_no_keywords_np)
-threshold = 0.6
+# threshold = 0.7
 # Input form
 input_text = st.text_area("Enter a sentence:", "")
 if st.button("Predict Values"):
@@ -55,21 +55,27 @@ if st.button("Predict Values"):
         distances_no, indices_no = index_no_keywords.search(input_embedding_np, k)
         
         # Filter by threshold
-        labels_with = []
-        confidences_with = []
-        for dist, idx in zip(distances_with[0], indices_with[0]):
-            if dist < threshold:
-                labels_with.append(value_titles[idx])
-                confidences_with.append(1 / (1 + dist))
+        # labels_with = []
+        # confidences_with = []
+        # for dist, idx in zip(distances_with[0], indices_with[0]):
+        #     if dist < threshold:
+        #         labels_with.append(value_titles[idx])
+        #         confidences_with.append(1 / (1 + dist))
         
-        labels_no = []
-        confidences_no = []
-        for dist, idx in zip(distances_no[0], indices_no[0]):
-            print(dist)
-            if dist < threshold:
-                labels_no.append(value_titles[idx])
-                confidences_no.append(1 / (1 + dist))
+        # labels_no = []
+        # confidences_no = []
+        # for dist, idx in zip(distances_no[0], indices_no[0]):
+        #     print(dist)
+        #     if dist < threshold:
+        #         labels_no.append(value_titles[idx])
+        #         confidences_no.append(1 / (1 + dist))
+        labels_with = [value_titles[idx] for idx in indices_with[0]]
+        # confidences_with = [max(0, 1 - min(dist, 2) / 2) * 100 for dist in distances_with[0]]
+        distances_with_list = distances_with[0].tolist()
         
+        labels_no = [value_titles[idx] for idx in indices_no[0]]
+        # confidences_no = [(1 / (1 + dist)) * 100 for dist in distances_no[0]]
+        distances_no_list = distances_no[0].tolist()
         # Display results side-by-side
         st.subheader("Results")
         col1, col2 = st.columns(2)
@@ -77,18 +83,18 @@ if st.button("Predict Values"):
         with col1:
             st.write("**Approach 1**")
             if labels_with:
-                for label, conf in zip(labels_with, confidences_with):
+                for label, conf in zip(labels_with, distances_with_list):
                     st.success(f"**Value**: {label}")
-                    st.write(f"**Confidence**: {conf:.2%}")
+                    st.write(f"**Distance**: {conf:.2}")
             else:
                 st.warning("No values below threshold.")
         
         with col2:
             st.write("**Approach 2**")
             if labels_no:
-                for label, conf in zip(labels_no, confidences_no):
+                for label, conf in zip(labels_no, distances_no_list):
                     st.success(f"**Value**: {label}")
-                    st.write(f"**Confidence**: {conf:.2%}")
+                    st.write(f"**Distance**: {conf:.2}")
             else:
                 st.warning("No values below threshold.")
     else:
